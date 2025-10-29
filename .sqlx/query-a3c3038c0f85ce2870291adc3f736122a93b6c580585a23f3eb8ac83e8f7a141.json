@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                key as \"key!\",\n                value as \"value!\",\n                expires_at as \"expires_at!\"\n            FROM cache\n            WHERE key = ? AND expires_at > ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "key!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "value!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "expires_at!",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "a3c3038c0f85ce2870291adc3f736122a93b6c580585a23f3eb8ac83e8f7a141"
+}

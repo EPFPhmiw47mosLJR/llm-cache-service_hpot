@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO cache (key, value, expires_at)\n            VALUES (?, ?, ?)\n            ON CONFLICT(key) DO UPDATE SET\n                value = excluded.value,\n                expires_at = excluded.expires_at;\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "773fdf2440a13a2bf429d5c60cce30e7844196731739fa300c2919c7a0aad121"
+}
