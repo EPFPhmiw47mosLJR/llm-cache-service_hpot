@@ -1,3 +1,5 @@
+use std::pin::Pin;
+
 pub struct MockLLMProvider;
 
 impl MockLLMProvider {
@@ -7,7 +9,10 @@ impl MockLLMProvider {
 }
 
 impl super::traits::LLMProvider for MockLLMProvider {
-    async fn query(&self, input: &str) -> Result<String, super::traits::LLMError> {
-        Ok(format!("Mock response for input: {}", input))
+    fn query<'a>(
+        &'a self,
+        input: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, super::traits::LLMError>> + Send + 'a>> {
+        Box::pin(async move { Ok(format!("Mock response for input: {}", input)) })
     }
 }

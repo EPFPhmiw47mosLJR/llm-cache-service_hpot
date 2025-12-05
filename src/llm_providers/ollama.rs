@@ -1,3 +1,5 @@
+use std::pin::Pin;
+
 pub struct OllamaProvider {
     api_key: String,
     model: String,
@@ -10,7 +12,10 @@ impl OllamaProvider {
 }
 
 impl super::traits::LLMProvider for OllamaProvider {
-    async fn query(&self, input: &str) -> Result<String, super::traits::LLMError> {
+    fn query<'a>(
+        &'a self,
+        input: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, super::traits::LLMError>> + Send + 'a>> {
         unimplemented!()
     }
 }

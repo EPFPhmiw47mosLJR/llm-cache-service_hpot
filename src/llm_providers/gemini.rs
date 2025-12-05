@@ -1,3 +1,5 @@
+use std::pin::Pin;
+
 use serde::{Deserialize, Serialize};
 use tracing::{debug, error, instrument};
 
@@ -69,7 +71,11 @@ struct TextPartOwned {
 // === LLMProvider Implementation ===
 impl super::traits::LLMProvider for GeminiProvider {
     #[instrument(skip(self))]
-    async fn query(&self, input: &str) -> Result<String, super::traits::LLMError> {
+    fn query<'a>(
+        &'a self,
+        input: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, super::traits::LLMError>> + Send + 'a>> {
+        Box::pin(async move {
         debug!("Querying Gemini LLM with input: {}", input);
 
         let url = format!(
@@ -91,7 +97,6 @@ impl super::traits::LLMProvider for GeminiProvider {
         let response = self
             .client
             .post(&url)
-            // .header("x-goog-api-key", &self.api_key)
             .header("Content-Type", "application/json")
             .json(&request_body)
             .send()
@@ -126,5 +131,6 @@ impl super::traits::LLMProvider for GeminiProvider {
 
         debug!("Received response from Gemini LLM: {}", result);
         Ok(result)
+        })
     }
 }

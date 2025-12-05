@@ -1,3 +1,5 @@
+use std::pin::Pin;
+
 pub struct OpenRouterProvider {
     api_key: String,
     model: String,
@@ -10,7 +12,10 @@ impl OpenRouterProvider {
 }
 
 impl super::traits::LLMProvider for OpenRouterProvider {
-    async fn query(&self, input: &str) -> Result<String, super::traits::LLMError> {
+    fn query<'a>(
+        &'a self,
+        input: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, super::traits::LLMError>> + Send + 'a>> {
         unimplemented!()
     }
 }
