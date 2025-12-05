@@ -1,8 +1,7 @@
 use axum::{Json, Router, routing::post};
 use llm_cache_service::{
     cache::{
-        CacheLayer, TenantCache, manager::CacheManager, redis_cache::RedisCache,
-        sqlite_cache::SqliteCache,
+        CacheLayer, TenantCache, manager::CacheManager, sqlite_cache::SqliteCache,
     },
     config::Config,
     llm_providers::{LLMProvider, gemini::GeminiProvider},
