@@ -1,4 +1,4 @@
 pub mod cache;
 pub mod llm_providers;
-pub mod prompt_provider;
+pub mod prompts;
 pub mod config;

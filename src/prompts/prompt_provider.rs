@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    cache::{CacheError, CacheLayer, manager::CacheManager},
+    cache::{CacheError, CacheLayer, TenantCache, manager::CacheManager},
     llm_providers::{LLMProvider, traits::LLMError},
 };
 
@@ -14,13 +14,16 @@ pub enum PromptProviderError {
     LLMError(#[from] LLMError),
 }
 
-pub struct PromptProvider<P: LLMProvider, L1: CacheLayer, L2: CacheLayer> {
-    llm_provider: Arc<P>,
-    cache_manager: Arc<CacheManager<L1, L2>>,
+pub struct PromptProvider<L1: CacheLayer, L2: CacheLayer> {
+    llm_provider: Arc<dyn LLMProvider + Send + Sync>,
+    cache_manager: Arc<CacheManager<TenantCache<L1>, TenantCache<L2>>>,
 }
 
-impl<P: LLMProvider, L1: CacheLayer, L2: CacheLayer> PromptProvider<P, L1, L2> {
-    pub fn new(llm_provider: Arc<P>, cache_manager: Arc<CacheManager<L1, L2>>) -> Self {
+impl<L1: CacheLayer, L2: CacheLayer> PromptProvider<L1, L2> {
+    pub fn new(
+        llm_provider: Arc<dyn LLMProvider + Send + Sync>,
+        cache_manager: Arc<CacheManager<TenantCache<L1>, TenantCache<L2>>>,
+    ) -> Self {
         Self {
             llm_provider,
             cache_manager,
@@ -28,7 +31,7 @@ impl<P: LLMProvider, L1: CacheLayer, L2: CacheLayer> PromptProvider<P, L1, L2> {
     }
 }
 
-impl<P: LLMProvider, L1: CacheLayer, L2: CacheLayer> PromptProvider<P, L1, L2> {
+impl<L1: CacheLayer, L2: CacheLayer> PromptProvider<L1, L2> {
     pub async fn get_response(&self, prompt: &str) -> Result<String, PromptProviderError> {
         if let Some(cached_response) = self.cache_manager.get(prompt).await? {
             return Ok(cached_response);
