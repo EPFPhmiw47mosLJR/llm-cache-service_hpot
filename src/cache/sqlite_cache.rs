@@ -91,8 +91,13 @@ impl CacheLayer for SqliteCache {
         .fetch_one(&self.pool)
         .await
         {
-            Ok(entry) => Ok(Some(entry.value)),
-            Err(sqlx::Error::RowNotFound) => Ok(None),
+            Ok(entry) => {
+                debug!("SQLite Cache HIT for key: {}", key);
+                Ok(Some(entry.value))
+            }
+            Err(sqlx::Error::RowNotFound) => {
+                debug!("SQLite Cache MISS for key: {}", key);
+                Ok(None)},
             Err(e) => {
                 error!("SQLite GET error for key {}: {}", key, e);
                 Err(CacheError::SQLite(e))

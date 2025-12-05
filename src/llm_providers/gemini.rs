@@ -1,4 +1,7 @@
+use core::error;
+
 use serde::{Deserialize, Serialize};
+use tracing::{debug, error, instrument};
 
 pub struct GeminiProvider {
     api_key: String,
@@ -67,10 +70,13 @@ struct TextPartOwned {
 
 // === LLMProvider Implementation ===
 impl super::traits::LLMProvider for GeminiProvider {
+    #[instrument(skip(self))]
     async fn query(&self, input: &str) -> Result<String, super::traits::LLMError> {
+        debug!("Querying Gemini LLM with input: {}", input);
+
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
-            self.model
+            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
+            self.model, self.api_key
         );
 
         let request_body = GeminiRequest {
@@ -87,24 +93,28 @@ impl super::traits::LLMProvider for GeminiProvider {
         let response = self
             .client
             .post(&url)
-            .header("x-goog-api-key", &self.api_key)
+            // .header("x-goog-api-key", &self.api_key)
             .header("Content-Type", "application/json")
             .json(&request_body)
             .send()
             .await
-            .map_err(|e| super::traits::LLMError::Other(format!("{:?}", e)))?;
+            .map_err(|e| {
+                error!("Error sending request to Gemini LLM: {:?}", e);
+                super::traits::LLMError::Other(format!("{:?}", e))
+            })?;
 
         if !response.status().is_success() {
+            error!("HTTP error from Gemini LLM: {}", response.status());
             return Err(super::traits::LLMError::Network(format!(
                 "HTTP error: {}",
                 response.status()
             )));
         }
 
-        let parsed: GeminiResponse = response
-            .json()
-            .await
-            .map_err(|e| super::traits::LLMError::InvalidResponse(format!("{:?}", e)))?;
+        let parsed: GeminiResponse = response.json().await.map_err(|e| {
+            error!("Error parsing response from Gemini LLM: {:?}", e);
+            super::traits::LLMError::InvalidResponse(format!("{:?}", e))
+        })?;
 
         let result = parsed
             .candidates
@@ -112,9 +122,11 @@ impl super::traits::LLMProvider for GeminiProvider {
             .and_then(|c| c.content.parts.get(0))
             .map(|p| p.text.clone())
             .ok_or_else(|| {
+                error!("No response from Gemini LLM");
                 super::traits::LLMError::InvalidResponse("No response from Gemini".to_string())
             })?;
 
+        debug!("Received response from Gemini LLM: {}", result);
         Ok(result)
     }
 }

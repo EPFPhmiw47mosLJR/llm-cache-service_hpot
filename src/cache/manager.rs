@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use tracing::{debug, instrument};
+
 use crate::cache::{CacheError, CacheLayer};
 
 pub struct CacheManager<L1: CacheLayer, L2: CacheLayer> {
@@ -8,25 +10,39 @@ pub struct CacheManager<L1: CacheLayer, L2: CacheLayer> {
 }
 
 impl<L1: CacheLayer, L2: CacheLayer> CacheManager<L1, L2> {
+    #[instrument(skip(l1, l2))]
     pub fn new(l1: Arc<L1>, l2: Arc<L2>) -> Self {
         Self { l1, l2 }
     }
 
+    #[instrument(skip(self), fields(key = %key))]
     pub async fn get(&self, key: &str) -> Result<Option<String>, CacheError> {
         let v = match self.l1.get(key).await? {
-            Some(v) => Some(v),
+            Some(v) => {
+                debug!("CacheManager: L1 cache hit for key '{}'", key);
+                Some(v)
+            }
             None => match self.l2.get(key).await? {
                 Some(v) => {
+                    debug!(
+                        "CacheManager: L2 cache hit for key '{}', warming L1 cache",
+                        key
+                    );
                     let _ = self.l1.set(key, &v).await;
                     Some(v)
                 }
-                None => None,
+                None => {
+                    debug!("CacheManager: Cache miss for key '{}'", key);
+                    None
+                }
             },
         };
         Ok(v)
     }
 
+    #[instrument(skip(self), fields(key = %key))]
     pub async fn set(&self, key: &str, value: &str) -> Result<(), CacheError> {
+        debug!("CacheManager: Setting key '{}' in both cache layers", key);
         let _ = self.l1.set(key, value).await?;
         let _ = self.l2.set(key, value).await?;
         Ok(())
