@@ -18,7 +18,7 @@ pub async fn setup_redis_testcontainer()
 -> Result<(String, u16, ContainerAsync<GenericImage>), Box<dyn std::error::Error + 'static>> {
     let redis_port: u16 = 6379;
 
-    let container = GenericImage::new("redis", "latest")
+    let container = GenericImage::new("redis", "8.4")
         .with_exposed_port(redis_port.tcp())
         .with_wait_for(WaitFor::message_on_stdout("Ready to accept connections"))
         .start()
