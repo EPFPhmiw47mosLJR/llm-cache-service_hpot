@@ -35,9 +35,6 @@ jobs:
         run: |
           sed -i "s|SF:.*/${GITHUB_REPOSITORY#*/}/|SF:|" lcov.info
 
-      - name: Debug LCOV
-        run: cat lcov.info
-
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
