@@ -94,15 +94,18 @@ struct CandidateContent {
 #[derive(Deserialize)]
 struct Candidate {
     content: CandidateContent,
-    finishReason: Option<String>,
+    #[serde(rename = "finishReason")]
+    finish_reason: Option<String>,
     index: u32,
 }
 
 #[derive(Deserialize)]
 struct GeminiResponse {
     candidates: Vec<Candidate>,
-    modelVersion: String,
-    responseId: String,
+    #[serde(rename = "modelVersion")]
+    model_version: String,
+    #[serde(rename = "responseId")]
+    response_id: String,
 }
 
 #[derive(Deserialize)]
