@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_variables)] // TODO: FIX THIS!
+
 use sqlx::{
     Pool, Sqlite,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
@@ -97,7 +99,8 @@ impl CacheLayer for SqliteCache {
             }
             Err(sqlx::Error::RowNotFound) => {
                 debug!("SQLite Cache MISS for key: {}", key);
-                Ok(None)},
+                Ok(None)
+            }
             Err(e) => {
                 error!("SQLite GET error for key {}: {}", key, e);
                 Err(CacheError::SQLite(e))

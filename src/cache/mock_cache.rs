@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_variables)] // TODO: FIX THIS!
+
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},

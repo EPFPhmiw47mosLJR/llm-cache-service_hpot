@@ -1,4 +1,10 @@
-use testcontainers::{core::{IntoContainerPort, WaitFor}, runners::AsyncRunner, ContainerAsync, GenericImage};
+#![allow(dead_code)] // TODO: FIX THIS!
+
+use testcontainers::{
+    ContainerAsync, GenericImage,
+    core::{IntoContainerPort, WaitFor},
+    runners::AsyncRunner,
+};
 
 pub fn setup_logger(default_level: &str) {
     // testcontainers=debug,llm_cache_service=debug
