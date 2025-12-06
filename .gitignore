@@ -22,3 +22,5 @@ target
 
 # PowerShell Quick Run Script
 quick_run.ps1
+# Config files
+prompts/**/config.toml
