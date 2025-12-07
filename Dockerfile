@@ -1,7 +1,12 @@
-FROM rust:1.90 AS builder
+FROM rust:1.90-slim AS builder
 
 WORKDIR /app
 COPY . .
+
+RUN apt-get update && apt-get install -y \
+    pkg-config libssl-dev build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN cargo build --release
 
 FROM debian:bookworm-slim
@@ -13,6 +18,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY --from=builder /app/target/release/llm-cache-service /app/app
+COPY --from=builder /app/prompts /app/prompts
 RUN mkdir -p /app/data
 
 CMD ["./app"]
