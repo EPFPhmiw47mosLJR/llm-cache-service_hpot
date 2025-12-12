@@ -3,17 +3,21 @@ FROM rust:1.90-slim AS builder
 WORKDIR /app
 COPY . .
 
-RUN apt-get update && apt-get install -y \
-    pkg-config libssl-dev build-essential \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cargo build --release
 
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
-    libssl3 \
-    ca-certificates \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
